@@ -1,63 +1,114 @@
 ---
 name: frontend-pattern-enforcer
-description: Analyzes existing frontend projects to extract and enforce design patterns, design tokens (colors, shadows, spacing, border-radius), component structure conventions, naming patterns, and folder organization. Use when working on frontend projects (React, Vue, any framework) where consistency with existing codebase patterns is critical. Analyzes projects before creating components to ensure new code matches established patterns. Use for component creation, refactoring existing components, or when user requests pattern analysis or consistency checks.
+description: "Use for ANY frontend development work - creating components, writing code, styling, or working with React, Vue, Angular, TypeScript, JavaScript, CSS, Tailwind, Shadcn, or any web UI framework. Automatically analyzes existing project patterns and enforces consistency in design tokens, component structure, naming conventions, and code organization. Always loads when user works on frontend code to ensure new code matches existing project patterns. Triggers on component creation, code writing, styling, refactoring, file creation, or any frontend development task."
 ---
 
 # Frontend Pattern Enforcer
 
 This skill ensures new frontend components strictly follow existing project patterns by analyzing the codebase and enforcing consistency in design tokens, component structure, naming conventions, and folder organization.
 
+## Automatic Workflow
+
+**This skill automatically activates for ANY frontend work.** When the user works on frontend code, Claude should:
+
+1. **Auto-detect the project** from context or ask for project path
+2. **Check if patterns exist** - Look for `project_patterns.json` in the conversation history or project
+3. **If patterns don't exist** - Automatically analyze the project first
+4. **Then proceed** with the user's request while following extracted patterns
+
+**Key principle:** ALWAYS ensure patterns are analyzed before creating/modifying code. The user should not have to explicitly request pattern analysis.
+
+## Trigger Scenarios
+
+This skill activates automatically when user:
+- Creates a new component ("Create a Button component")
+- Writes any frontend code ("Add a modal to the page")
+- Works with CSS/styling ("Style this card")
+- Modifies existing components
+- Asks about code organization
+- Works with React, Vue, Angular, or any frontend framework
+- Uses TypeScript, JavaScript, Tailwind, CSS, etc.
+
+**If user is working in a frontend project, this skill is active.**
+
 ## Core Workflow
 
-### First-Time Setup: Analyze the Project
+### Pattern Analysis (Runs Automatically)
 
-Before creating any components in a project, analyze it to extract patterns:
+**Claude handles this automatically** - users don't need to request it explicitly.
 
-1. **Run the analyzer**:
-```bash
-python scripts/analyze_project.py /path/to/project project_patterns.json
-```
+When a user starts frontend work, Claude should:
 
-2. **Generate readable report**:
-```bash
-python scripts/generate_report.py project_patterns.json project_patterns.md
-```
+1. **Detect project path** from context or ask once
+2. **Check if analysis exists** in conversation history
+3. **If not analyzed:**
+   - Automatically run: `python scripts/analyze_project.py /path/to/project project_patterns.json`
+   - Generate report: `python scripts/generate_report.py project_patterns.json project_patterns.md`
+   - Store patterns in context for the conversation
+4. **Use patterns** for all subsequent requests
 
-3. **Review the report** (`project_patterns.md`) to understand:
-   - Design tokens (colors, shadows, radii, spacing)
-   - Folder structure conventions
-   - Component patterns (TypeScript usage, Props interfaces, exports)
-   - Naming conventions (PascalCase, kebab-case, etc.)
-   - Import patterns (path aliases vs relative imports)
+Claude will automatically detect whether to use `python` or `python3`:
+- If `python3` exists → uses `python3`
+- If `python` exists → uses `python`
+- Works on all systems!
 
-### Creating Components: Follow Extracted Patterns
+**What gets extracted automatically:**
+- Design tokens (colors, shadows, radii, spacing)
+- Folder structure conventions
+- Component patterns (TypeScript usage, Props interfaces, exports)
+- Naming conventions (PascalCase, kebab-case, etc.)
+- Import patterns (path aliases vs relative imports)
 
-When creating a new component:
+### Creating Components: Patterns Applied Automatically
 
-1. **Reference the analysis** - Check `project_patterns.md` before writing code
+When user requests a component (e.g., "Create a Button component"), Claude automatically:
 
-2. **Match the patterns**:
-   - Use the project's naming convention
-   - Place in the correct folder
-   - Use TypeScript if that's the standard
-   - Define Props interface if common
-   - Match export style (default vs named)
-   - Use the preferred import style
-
-3. **Use design tokens** - NEVER hardcode values:
+1. **Checks patterns** - Uses stored analysis from conversation context
+2. **Matches all conventions automatically**:
+   - Uses the project's naming convention
+   - Places in the correct folder
+   - Uses TypeScript if that's the standard  
+   - Defines Props interface if common
+   - Matches export style (default vs named)
+   - Uses the preferred import style
+3. **Enforces design tokens** - NEVER hardcode values:
    - Colors: Use CSS variables or Tailwind classes from the project
    - Shadows: Use defined shadow tokens
    - Border radius: Use radius tokens
    - Spacing: Follow the spacing scale
+4. **Optionally verifies** - Can run compliance check if requested
 
-4. **Verify compliance**:
-```bash
-python scripts/check_compliance.py project_patterns.json /path/to/Component.tsx
-```
-
-5. **Fix any issues** reported by the compliance checker
+**User experience:** User says "Create a Button component" → Claude automatically creates it following ALL project patterns. No manual steps needed.
 
 ## Critical Rules
+
+### Python Compatibility
+
+**IMPORTANT:** Always detect which Python command is available before running scripts.
+
+Check for Python availability:
+```bash
+# Check for python3 first (preferred)
+if command -v python3 &> /dev/null; then
+    PYTHON_CMD="python3"
+elif command -v python &> /dev/null; then
+    PYTHON_CMD="python"
+else
+    echo "Error: Python not found. Please install Python 3."
+    exit 1
+fi
+```
+
+Then use `$PYTHON_CMD` to run scripts:
+```bash
+$PYTHON_CMD scripts/analyze_project.py /path/to/project output.json
+```
+
+**Compatibility:**
+- ✅ Works with `python3` command
+- ✅ Works with `python` command  
+- ✅ Automatically detects which is available
+- ✅ Requires Python 3.6+
 
 ### Design Token Enforcement
 
@@ -106,13 +157,23 @@ After creating a component, always run the compliance checker. It will:
 
 ## Available Scripts
 
+All scripts are compatible with both `python` and `python3` commands. Claude will automatically detect which is available on your system.
+
 ### `analyze_project.py`
 Scans a frontend project and extracts all patterns into a JSON file.
 
-**Usage**:
+**Python 3 Required:** These scripts require Python 3.6+
+
+**Manual Usage** (if needed):
 ```bash
+# Try python3 first (recommended)
+python3 scripts/analyze_project.py <project_path> [output.json]
+
+# Or use python if that's what your system has
 python scripts/analyze_project.py <project_path> [output.json]
 ```
+
+**Claude Usage:** Claude automatically detects and uses the correct command.
 
 **What it extracts**:
 - Design tokens (colors, shadows, radii, spacing, fonts)
@@ -124,10 +185,16 @@ python scripts/analyze_project.py <project_path> [output.json]
 ### `check_compliance.py`
 Verifies a component follows extracted patterns.
 
-**Usage**:
+**Manual Usage** (if needed):
 ```bash
+# With python3
+python3 scripts/check_compliance.py <patterns.json> <component_path>
+
+# Or with python
 python scripts/check_compliance.py <patterns.json> <component_path>
 ```
+
+**Claude Usage:** Claude automatically detects and uses the correct command.
 
 **Output**:
 - Compliance score (0-100)
@@ -138,10 +205,16 @@ python scripts/check_compliance.py <patterns.json> <component_path>
 ### `generate_report.py`
 Converts JSON analysis to readable markdown.
 
-**Usage**:
+**Manual Usage** (if needed):
 ```bash
+# With python3
+python3 scripts/generate_report.py <analysis.json> [output.md]
+
+# Or with python
 python scripts/generate_report.py <analysis.json> [output.md]
 ```
+
+**Claude Usage:** Claude automatically detects and uses the correct command.
 
 ## Reference Documentation
 

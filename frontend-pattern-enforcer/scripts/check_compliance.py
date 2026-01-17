@@ -1,7 +1,26 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Check if a new component follows the project's established patterns.
+
+Compatible with both 'python' and 'python3' commands.
+Requires Python 3.6 or higher.
 """
+
+import sys
+import os
+
+# Ensure we're using Python 3
+if sys.version_info[0] < 3:
+    print("Error: This script requires Python 3.6 or higher")
+    print(f"Current version: Python {sys.version_info[0]}.{sys.version_info[1]}")
+    print("\nPlease run with: python3 scripts/check_compliance.py")
+    sys.exit(1)
+
+if sys.version_info[0] == 3 and sys.version_info[1] < 6:
+    print("Error: This script requires Python 3.6 or higher")
+    print(f"Current version: Python {sys.version_info[0]}.{sys.version_info[1]}")
+    sys.exit(1)
 
 import json
 import re
